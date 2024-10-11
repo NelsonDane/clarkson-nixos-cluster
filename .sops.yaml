@@ -11,6 +11,7 @@ keys:
   - &node8 age1rzm3wqrapmntctecxs4pw3298f2y37jq4jxkxla86g5eef4hjyus2f3ff2
   - &node9 age1ljqd46aajetrmwum2pljn2vjpa7aa7jxewd2m7xye758ypasg3nsv2hcgq
   - &node10 age12c4tynv5rp5fcfllggy4xlaustjjtl4qwzlcvp85g8j625m0kq3syadnk4
+  - &node11 age19knl89y0572umg7uhuchr732dq8ld008wzxd3cx7j9hrwpdfje2qn2frjv
 creation_rules:
   - path_regex: secrets/.*\.yaml
     key_groups:
@@ -27,3 +28,4 @@ creation_rules:
         - *node8
         - *node9
         - *node10
+        - *node11

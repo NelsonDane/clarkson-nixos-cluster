@@ -158,7 +158,7 @@
     services.sudo.sshAgentAuth = true;
   };
   programs.ssh.extraConfig = ''
-    Host 192.168.100.1? cluster-node-*
+    Host 192.168.100.1? 192.168.100.2? cluster-node-*
       user cluster
       IdentityFile /run/secrets/cluster_talk
   '';

@@ -24,6 +24,7 @@
       { name = "cluster-node-7"; ip = "192.168.100.17"; }
       { name = "cluster-node-8"; ip = "192.168.100.18"; }
       { name = "cluster-node-9"; ip = "192.168.100.19"; }
+      { name = "cluster-node-10"; ip = "192.168.100.20"; }
     ];
   in {
     nixosConfigurations = builtins.listToAttrs (map (node: {

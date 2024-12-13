@@ -4,15 +4,16 @@ Built with NixOS and Kubernetes.
 
 
 ## Build NixOS ISO
-If building with Apple Silicon Mac (or other non x86_64 architecture), see [this post](https://blog.nelsondane.me/posts/build-nixos-iso-on-silicon-mac/). Otherwise, follow the steps below.
+When adding a new node, you need to create a bootable USB. To do that, you need to build an ISO file. If building with Apple Silicon Mac (or other non x86_64 architecture), see [this post](https://blog.nelsondane.me/posts/build-nixos-iso-on-silicon-mac/). Otherwise, follow the steps below.
 ```bash
 cd iso
 nix build .#nixosConfigurations.exampleIso.config.system.build.isoImage
 ```
-Resulting ISO will be in the `result` directory. Then burn that ISO to a USB drive.
+Resulting ISO will be in the `result` directory. Then burn that ISO to a USB drive, then boot the new node from the USB drive.
 
 ## Secrets Management
-Secrets are managed with [sops-nix](https://github.com/Mic92/sops-nix). On creation, each node generates a key located at `/etc/ssh/ssh_host_ed25519_key.pub`. During the install, the key is converted to `age` and printed in the terminal. Copy this, and add it to the `.sops.yaml` file.
+Node secrets are managed with [sops-nix](https://github.com/Mic92/sops-nix). 
+On first boot, each node generates a key located at `/etc/ssh/ssh_host_ed25519_key.pub`. After the install, the key is converted to `age` and printed in the terminal. Copy this, and add it to the `.sops.yaml` file.
 
 To create your own key for local development, generate an ssh key, and convert it to `age`:
 ```bash
@@ -20,28 +21,31 @@ nix-shell -p ssh-to-age --run 'cat /YOUR/KEY/PATH.pub | ssh-to-age'
 ```
 Then add the output to the `.sops.yaml` file.
 
-To create a `keys.txt` for local development, run the following command:
+To create a `keys.txt` for local secrets management, run the following command:
 ```bash
 nix run nixpkgs#ssh-to-age -- -private-key -i ~/YOUR/KEY/PATH > keys.txt
 ```
+This is needed if you're updating the secrets locally.
 
-To update keys across all nodes, commmit the changes to the `.sops.yaml` file, and run the following command:
+To update the new keys across all nodes, run the following command:
 ```bash
 nix-shell -p sops --run "SOPS_AGE_KEY_FILE=./keys.txt sops updatekeys secrets/secrets.yaml"
 ```
+Then commit the changes to the `.sops.yaml` file and the nodes will be updated on their next rebuild.
 
 ## Adding a New Node
 Make sure you have `nix` installed locally. Then:
 1. Add the new node and its IP to the in `flake.nix`.
-2. Execute the following command:
+2. Boot the node from the ISO created in [Build NixOS ISO](#build-nixos-iso). Ensure that the node is reachable at `192.168.100.199`. If you get permission errors, you may have to add your key to the ISO config file.
+3. Execute the following command on your local machine:
 ```bash
 SSH_PRIVATE_KEY="$(cat ./nixos_cluster)"$'\n' nix run github:nix-community/nixos-anywhere --extra-experimental-features "nix-command flakes" -- --flake '.#cluster-node-NUMBER' root@192.168.100.199
 ```
-3. Once the node boots, run:
+4. Once the node boots, ssh into the node and run the following command:
 ```bash
 nix-shell -p ssh-to-age --run 'cat /etc/ssh/ssh_host_ed25519_key.pub | ssh-to-age'
 ```
-Copy the outputted `age` key to the `.sops.yaml` file and regenerate secrets, then update the node. See [Secrets Management](#secrets-management) for more information.
+Copy the outputted `age` key to the `.sops.yaml` file and regenerate secrets (See [Secrets Management](#secrets-management)), then update the node.
 
 ## Updating the Cluster with New/Changed Configuration
 If you have the repository cloned on a node (working on changes without committing), then run to update from local source:
@@ -55,24 +59,20 @@ sudo nixos-rebuild switch --flake '.#cluster-node-NUMBER' --use-remote-sudo --ta
 ```
 This will also update secrets on each node.
 
-To pull new changes from the repository without cloning, just run:
+To pull new changes from the repository without cloning it onto the node, just run:
 ```bash
 sudo nixos-rebuild switch --flake github:NelsonDane/clarkson-nixos-cluster#cluster-node-NUMBER
 ```
 
 All nodes can ssh into each other using the included `ssh_config`. There is a key located in `.sops.yaml` that is available at `/run/secrets/cluster_talk`.
 
-## Update NixOS
-To update NixOS on all nodes, run the following command:
-```bash
-nix flake update
-```
-Commit, then update each node. See [Updating the Cluster with New/Changed Configuration](#updating-the-cluster-with-newchanged-configuration) for more information.
+If you don't want to manually update each node, they pull and apply new changes from this repository every day at 3:30am.
 
-A GitHub Action runs this everyday at 3am automatically.
+## Updating NixOS, Packages, and Configuration
+A [GitHub Action](https://github.com/NelsonDane/clarkson-nixos-cluster/actions) runs this everyday at 3am automatically.
 
 ## Aliases
-For convenience, the following aliases are available:
+For convenience, the following aliases are available when ssh'd into a node:
 ```bash
 c -> clear
 k -> kubectl
@@ -88,7 +88,7 @@ hf apply
 ```
 To see the gui, go to `http://192.168.100.61` in your browser.
 
-To get Metallb working, run the following command:
+To get Metallb working (if it's not), run the following command:
 ```bash
 cd helm/kustomize
 kubectl apply -k .
@@ -116,3 +116,11 @@ h upgrade slurm slurm-cluster-chart
 ```
 
 The Slurm GUI is available at `https://192.168.100.82`
+
+## Adding new Apps/Services
+To add a new app or service, find a helm chart and add it to `helm/helmfile.yaml`. Then run:
+```bash
+cd helm
+hf apply
+```
+And it will be installed on the cluster.

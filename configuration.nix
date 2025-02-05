@@ -118,11 +118,13 @@
 
   environment.systemPackages = with pkgs; [
     vim
+    htop
     k3s
     openiscsi
     cifs-utils
     nfs-utils
     git
+    lazygit
     helm
     helmfile
     (wrapHelm kubernetes-helm {
@@ -140,6 +142,7 @@
       alias k="kubectl"
       alias h="helm"
       alias hf="helmfile"
+      alias lg="lazygit"
     '';
   };
   # system.activationScripts.chmod = ''

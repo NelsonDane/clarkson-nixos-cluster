@@ -1,7 +1,7 @@
 controller:
   ingressClassResource:
     # -- Name of the ingressClass
-    name: nginx-internal
+    name: ingress-nginx
     # -- Is this ingressClass enabled or not
     enabled: true
     # -- Is this the default ingressClass for the cluster
@@ -14,7 +14,7 @@ controller:
     parameters: {}
   # -- For backwards compatibility with ingress.class annotation, use ingressClass.
   # Algorithm is as follows, first ingressClassName is considered, if not present, controller looks for ingress.class annotation
-  ingressClass: nginx-internal
+  ingressClass: ingress-nginx
   service:
     externalTrafficPolicy: Local
     loadBalancerIP: 192.168.100.65

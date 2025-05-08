@@ -1,5 +1,6 @@
 keys:
   - &nlaptop age108xqmsshksap8695ewy48pfdhw7kx5k9dgp8pxzx5tqdwlu6naksweyfc3
+  - &zlaptop age1ux9jmheqxscf79zlhdsqj37uly8l6uzya09qhp8yltlpe6h3hefswmlcsf
   - &node0 age18lu79lcspn67c05zmglt5036jh6d270nhne76t4e3u64wwu8qejsdyk4k6
   - &node1 age17fljhj2fkjw2cjvymq22494a3t3chqtj3evhwn0rxwz0vke3sd0qzq2c2h
   - &node2 age1xneuqq7x7aq5ftv2vzs58vz2ch33sczdnpzyj6jk9c29s3w6743ssncllu
@@ -17,6 +18,7 @@ creation_rules:
     key_groups:
       - age:
         - *nlaptop
+        - *zlaptop
         - *node0
         - *node1
         - *node2

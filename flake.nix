@@ -12,6 +12,7 @@
   };
 
   outputs = { self, nixpkgs, disko, ... }@inputs: let
+    nixosModules = import ./modules/nixos;
     # Define cluster nodes/IPs
     nodes = [
       { name = "cluster-node-0"; ip = "192.168.100.10"; }
@@ -28,6 +29,7 @@
       { name = "cluster-node-11"; ip = "192.168.100.21"; }
     ];
   in {
+    inherit nixosModules;
     nixosConfigurations = builtins.listToAttrs (map (node: {
       name = node.name;
 	    value = nixpkgs.lib.nixosSystem {
@@ -46,6 +48,7 @@
 	            ./hardware-configuration.nix
 	            ./disko-config.nix
 	            ./configuration.nix
+              nixosModules.tailscale-autoconnect
 	          ];
         };
     }) nodes);

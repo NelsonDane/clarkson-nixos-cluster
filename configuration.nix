@@ -26,7 +26,7 @@
     wantedBy = [ "timers.target" ];
     partOf = [ "update-nixos.service" ];
     timerConfig = {
-      OnCalendar = "*-*-* 03:30:00";
+      OnCalendar = "hourly";
       Unit = "update-nixos.service";
     };
   };
@@ -50,6 +50,7 @@
     # Secrets
     secrets."rancher_token" = {};
     secrets."cluster_talk" = {};
+    secrets."tailscale_key" = {};
   };
 
   # Use the systemd-boot EFI boot loader.
@@ -180,6 +181,13 @@
     address = meta.ip_address;
     prefixLength = 24;
   }];
+
+  # Configure tailscale
+  services.tailscaleAutoconnect = {
+    enable = true;
+    authkeyFile = config.sops.secrets."tailscale_key".path;
+    loginServer = "https://login.tailscale.com";
+  };
 
   system.stateVersion = "24.11";
 
